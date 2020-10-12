@@ -70,7 +70,7 @@ const Home = ({ data }) => (
 
 export const getServerSideProps = async () => {
 	const res = await axios.get(
-		`https://api.staging.myautochek.com/v1/inventory/car/search`
+		`https://api.staging.myautochek.com/v1/inventory/car/search?page_size=2`
 	);
 
 	const { result, pagination } = res.data;
