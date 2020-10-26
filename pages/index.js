@@ -1,28 +1,16 @@
 import React, { useEffect, useState } from "react";
-import Link from "next/link";
 import Head from "../components/head";
-import axios from "axios";
+import Link from "next/link";
 
-const Home = () => {
-	const [cars, setCars] = useState([]);
+import { useAuth } from "../hooks/useAuth";
 
-	const fetchCars = async () => {
-		try {
-			const res = await axios.get(
-				`https://api.staging.myautochek.com/v1/inventory/car/search?page_size=20`
-			);
-
-			const { result, pagination } = res.data;
-			setCars(result);
-		} catch (error) {
-			console.log(error);
-		}
-	};
+const Home = (props) => {
+	console.log(props);
+	const { getSession, logOut } = useAuth();
 
 	useEffect(() => {
-		fetchCars();
-	}, []);
-
+		getSession();
+	});
 	return (
 		<div>
 			<Head title="Home" />
@@ -32,12 +20,12 @@ const Home = () => {
 				<p className="description">
 					To get started, edit <code>pages/index.js</code> and save to reload.
 				</p>
+				{/* {user && <p>You are signed in as {user.name}</p>} */}
+				<Link href="/signin">
+					<a>Sign In</a>
+				</Link>
 
-				<ul>
-					{cars.map((d) => {
-						return <li key={d.id}>{d.title}</li>;
-					})}
-				</ul>
+				<button onClick={logOut}>Logout</button>
 			</div>
 
 			<style jsx>{`
@@ -90,20 +78,13 @@ const Home = () => {
 	);
 };
 
-// export const getServerSideProps = async () => {
-// 	const res = await axios.get(
-// 		`https://api.staging.myautochek.com/v1/inventory/car/search?page_size=2`
-// 	);
-
-// 	const { result, pagination } = res.data;
-
-// 	console.log({ result });
-
-// 	return {
-// 		props: {
-// 			data: { cars: result, pagination },
-// 		},
-// 	};
-// };
+export const getServerSideProps = async (ctx) => {
+	const { getSession } = useAuth();
+	const session = await getSession(ctx);
+	// console.log({ session });
+	return {
+		props: {},
+	};
+};
 
 export default Home;
