@@ -1,9 +1,17 @@
+import React, { useState, useEffect } from "react";
 import jwt from "jsonwebtoken";
 import cookie from "cookie";
 import Cookies from "js-cookie";
 import Router from "next/router";
 
 const isClient = typeof window !== "undefined";
+
+/**
+ * @function
+ * @name useAuth
+ * @description an authentication for NextJs. It helps authenticate both on the client and on the server side
+ * @returns {object}
+ */
 
 export const useAuth = () => {
 	/**
@@ -34,7 +42,7 @@ export const useAuth = () => {
 		});
 
 		const res = await login;
-		setSession(res);
+		setCurrentSession(res);
 	};
 
 	/**
@@ -51,14 +59,14 @@ export const useAuth = () => {
 
 	/**
 	 * @function
-	 * @name setSession
-	 * @param {object} res an object with the session details like user payload, token, etc
+	 * @name setCurrentSession
+	 * @param {object} res the response data returned from your authentication endpoint should be an object
 	 * @description Takes the user payload from login or register and sets the user payload
 	 * cookie and token.
 	 * Axios can also be configured here
 	 *
 	 */
-	const setSession = (res) => {
+	const setCurrentSession = (res) => {
 		const { user, token } = res;
 		Cookies.set("user", JSON.stringify(user));
 		Cookies.set("token", token);
@@ -85,27 +93,20 @@ export const useAuth = () => {
 		//on the server
 		const session = {};
 
+		let cookies = null;
 		if (isClient) {
-			const cookies = Cookies.get();
-			const { token, user } = cookies; //user is a string that needs to be parsed
-			if (token && user && isValidToken(token)) {
-				session.token = token;
-				session.user = user ? JSON.parse(user) : null;
-				session.isAuthenticated = true;
-			}
+			cookies = Cookies.get();
 		} else {
-			const cookies = cookie.parse(ctx.req.headers?.cookie || "");
-			if (cookies.token && cookies.user) {
-				const { token, user } = cookies;
-				if (token && user && isValidToken(token)) {
-					session.user = JSON.parse(cookies.user);
-					session.token = cookies.token;
-					session.isAuthenticated = true;
-				} else {
-					return session;
-				}
-			}
+			cookies = cookie.parse(ctx.req.headers?.cookie || "");
 		}
+		const { token, user } = cookies;
+
+		if (token && user && isValidToken(token)) {
+			session.token = token;
+			session.user = user ? JSON.parse(user) : null;
+			session.isAuthenticated = true;
+		}
+
 		return session;
 	};
 
@@ -124,5 +125,15 @@ export const useAuth = () => {
 		}
 	};
 
-	return { logIn, logOut, isValidToken, getSession };
+	// useEffect(() => {}, []);
+
+	return {
+		logIn,
+		logOut,
+		isValidToken,
+		getSession,
+		// currentUser,
+		// session,
+		// setCurrentSession,
+	};
 };

@@ -4,13 +4,9 @@ import Link from "next/link";
 
 import { useAuth } from "../hooks/useAuth";
 
-const Home = (props) => {
-	console.log(props);
-	const { getSession, logOut } = useAuth();
+const Home = ({ session }) => {
+	const { logOut } = useAuth();
 
-	useEffect(() => {
-		getSession();
-	});
 	return (
 		<div>
 			<Head title="Home" />
@@ -21,11 +17,20 @@ const Home = (props) => {
 					To get started, edit <code>pages/index.js</code> and save to reload.
 				</p>
 				{/* {user && <p>You are signed in as {user.name}</p>} */}
-				<Link href="/signin">
-					<a>Sign In</a>
-				</Link>
 
-				<button onClick={logOut}>Logout</button>
+				{session.isAuthenticated ? (
+					<>
+						<button onClick={logOut}>Logout</button>
+						<p>You are signed in as {session.user.name}</p>
+					</>
+				) : (
+					<p>
+						You are not logged in. Login{" "}
+						<Link href="/signin">
+							<a role="button">here</a>
+						</Link>{" "}
+					</p>
+				)}
 			</div>
 
 			<style jsx>{`
